@@ -1,0 +1,28 @@
+# Define the registry path and key
+$RegPath = "HKLM:\System\CurrentControlSet\Control\Lsa"
+$ValueName = "SCENoApplyLegacyAuditPolicy"
+
+# Correct setting value
+# 1 = Enabled (Force subcategory audit policies)
+$CorrectValue = 1
+
+# Ensure the registry path exists
+if (-not (Test-Path $RegPath)) {
+    Write-Output "Registry path not found: $RegPath"
+    exit
+}
+
+# Get the current value
+$currentValue = (Get-ItemProperty -Path $RegPath -Name $ValueName -ErrorAction SilentlyContinue).$ValueName
+
+# Check compliance
+if ($currentValue -eq $CorrectValue) {
+    Write-Output "Audit policy subcategory enforcement is already enabled (Compliant)."
+} else {
+    Write-Output "Audit policy subcategory enforcement is NOT enabled (Non-compliant). Updating..."
+    Set-ItemProperty -Path $RegPath -Name $ValueName -Value $CorrectValue
+    Write-Output "Audit policy subcategory enforcement has been enabled (Now compliant)."
+}
+
+# Optional: Force a policy update
+# gpupdate /force
